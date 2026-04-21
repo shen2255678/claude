@@ -1,193 +1,208 @@
-# Harness Engineering — 15 分鐘快速開始
+# DESTINY 實戰 — Claude Code 工作流快速導覽
 
-適合急著開始的人。完整文檔見 [IMPLEMENTATION-GUIDE.md](./IMPLEMENTATION-GUIDE.md)
+在有 2000+ 用戶的生產系統中，怎麼用 Claude Code 提高開發效率？本指南帶你快速理解。
+
+完整文檔見 [CLAUDE-CODE-BEST-PRACTICES.md](./CLAUDE-CODE-BEST-PRACTICES.md)
 
 ---
 
-## ✅ Step 1: 克隆倉庫（2 分鐘）
+## 📊 DESTINY 的三層上下文結構
+
+```
+Layer 1: CLAUDE.md (81 行 × 每次 session)
+  └─ 永遠載入
+    ├─ 專案概覽（DESTINY 是什麼）
+    ├─ 技術棧（Next.js + FastAPI + Supabase）
+    ├─ 關鍵陷阱（算法版本、資料品質、API 規範）
+    └─ 模組索引（後端、前端、數據層）
+
+Layer 2: .claude/rules/ (按路徑條件載入)
+  ├─ astro-service.md    (globs: astro-service/**)
+  ├─ frontend.md         (globs: src/pages/**)
+  ├─ api-security.md     (globs: src/api/**)
+  └─ supabase.md         (globs: migrations/**)
+
+Layer 3: docs/ (主動讀取)
+  ├─ ALGORITHM.md        → 改推薦邏輯時讀
+  ├─ DESIGN-DECISIONS.md → 「為什麼這樣」
+  ├─ TESTING-GUIDE.md    → 寫測試時讀
+  └─ DEPLOYMENT.md       → 發佈時讀
+```
+
+**效果**：
+- Session 開始消耗：~2,400 tokens（不是 50,000+）
+- 編輯後端時，自動看到後端規則（不是無關的前端規則）
+- 新人第一天就能理解「為什麼」
+
+---
+
+## ✅ Step 1: 了解結構（5 分鐘）
 
 ```bash
-git clone https://github.com/shen2255678/claude.git my-ai-project
-cd my-ai-project
-git remote set-url origin <your-new-repo>
+# 1. 看主入口
+cat CLAUDE.md          # 81 行的上下文
+
+# 2. 看條件規則
+ls -la .claude/rules/  # 模組級別的規則
+
+# 3. 看完整文檔
+ls -la docs/           # 12+ 核心文檔
 ```
 
 ---
 
-## ✅ Step 2: 建立三個核心目錄（1 分鐘）
+## ✅ Step 2: 讀最佳實踐（30 分鐘）
+
+```
+CLAUDE-CODE-BEST-PRACTICES.md 包含 12 章：
+
+1. 三層上下文架構（你現在讀的）
+2. Token 成本控管（如何省 token）
+3. 對話工作流程
+4. Spec 驅動開發與文件管理
+5. 大型專案導入策略 ← 如果你要應用到自己的項目
+6. 資料庫知識注入
+7. 團隊規範制定
+8. Auto Memory 管理
+9. Hooks 強制機制
+10. Git 工作流
+11. Skills 操作與團隊整合
+12. 安全與合規
+```
+
+---
+
+## ✅ Step 3: 探索實際的文件（1 小時）
 
 ```bash
-# 已經存在，無需建立：
-# .claude/memory/      ← Session 記憶
-# .claude/rules/       ← 條件化規則
-# docs/                ← 文檔驅動開發
+# 看實際的上下文入口
+cat CLAUDE.md
+
+# 看後端規則（globs: astro-service/**)
+cat .claude/rules/astro-service.md
+
+# 看前端規則（globs: src/pages/**)
+cat .claude/rules/frontend.md
+
+# 看完整的系統規範
+cat docs/DESTINY-MVP-SPEC.md
+
+# 看 40+ 設計決策
+cat docs/DESIGN-DECISIONS.md
+
+# 看算法版本歷史
+cat docs/ALGORITHM-CHANGELOG.md
 ```
 
 ---
 
-## ✅ Step 3: 建立 MEMORY.md（3 分鐘）
+## ✅ Step 4: 理解「為什麼這樣」
 
-編輯 `.claude/memory/MEMORY.md`，新增你的第一條記錄：
+### 為什麼要分三層？
 
-```markdown
-# 專案記憶 — [你的專案名]
+```
+❌ 所有文件都載入
+  session 開始 → 一次載入 100KB+ 文檔
+  → 消耗 50,000+ tokens
+  → 很多不相關的內容
 
-## 當前進度
+✅ 分層載入（DESTINY 實踐）
+  session 開始 → 只載 CLAUDE.md (81 行)
+              → 編輯後端時載 astro-service.md
+              → 需要細節時主動讀 docs/
+  → 消耗 2,400 tokens
+  → 精準的、相關的內容
+```
 
-### ✅ 完成
-- (無)
+### 為什麼要條件化規則？
 
-### 🔄 進行中
-- 初始化 Harness Engineering 系統
+```
+❌ 一個 100 行的 rules 檔
+  編輯 Python，也載到
+  編輯 TypeScript，也載到
+  → 衝突、混亂、token 浪費
 
-### ⏳ 待做
-- 編輯 docs/SPEC.md（系統規範）
-- 編輯 .claude/rules/ 根據技術棧
-- 第一次提交
-
-## 重要決策
-- (無)
-
-## 已知問題
-- (無)
-
----
-更新時間：2026-04-21
+✅ globs 條件化（DESTINY 實踐）
+  編輯 astro-service/**, 自動載 astro-service.md
+  編輯 src/pages/**, 自動載 frontend.md
+  → 自動、精準、無衝突
 ```
 
 ---
 
-## ✅ Step 4: 編輯系統規範（5 分鐘）
+## 🎯 實踐：你的第一個開發循環
 
-編輯 `docs/DESTINY-MVP-SPEC.md`（改名為你的項目名）
+### 假設：改進推薦算法
 
-**最小版本**：
+```
+1. Session 開始
+   CLAUDE.md 自動載入
+   Claude 知道：這是推薦算法，看 ALGORITHM.md
 
-```markdown
-# [你的專案] — MVP 規範
+2. 讀文檔
+   打開 docs/ALGORITHM.md
+   看到：當前版本是 v2.3，修改歷史在 ALGORITHM-CHANGELOG.md
 
-## 項目概述
-一句話說明你的項目做什麼。
+3. 編輯代碼
+   編輯 astro-service/matching.py
+   .claude/rules/astro-service.md 自動載入
+   提醒：
+     ✓ 更新 ALGORITHM-CHANGELOG.md
+     ✓ 修改完要在 DESIGN-DECISIONS.md 記錄「為什麼改」
+     ✓ 跑完整測試（見 TESTING-GUIDE.md）
 
-例：一個支持多模型 LLM 的 AI 應用系統，提供個性化推薦。
+4. 完成
+   更新 .claude/memory/MEMORY.md
+   記錄：「完成算法優化，v2.3 → v2.4」
 
-## 技術棧
-- Frontend: Next.js / React / Vue
-- Backend: Python FastAPI / Node.js
-- Database: PostgreSQL / MongoDB
-- LLM: Claude / GPT / Gemini
-
-## 核心功能
-1. 用戶認證
-2. 數據輸入
-3. AI 推理
-4. 結果展示
-
-## 成功指標
-- 支持 X 個並發用戶
-- API 響應 < 2 秒
-- 準確率 > 85%
-
----
-版本：1.0
-最後更新：2026-04-21
+5. 交接
+   下次 session，新人讀 MEMORY.md
+   5 分鐘內理解：「上次改了什麼」「當前狀態」「下一步」
 ```
 
 ---
 
-## ✅ Step 5: 建立規則文件（3 分鐘）
+## 📈 效果對標
 
-根據你的技術棧保留對應的規則文件，刪除不需要的。
-
-**保留這些**（例如用 FastAPI + Next.js）：
-- `.claude/rules/docs-first.md` — 實作前讀文檔
-- `.claude/rules/astro-service.md` — 後端服務規則
-- `.claude/rules/frontend.md` — 前端規則
-- `.claude/rules/api-security.md` — 安全規則
-
-**刪除這些**（不相關的）：
-```bash
-rm .claude/rules/supabase.md    # 如果不用 Supabase
-rm .claude/rules/weights-tuning.md  # 如果不用機器學習
-```
+| 情境 | 傳統流程 | DESTINY 實踐 | 改善 |
+|------|---------|-----------|------|
+| **新人上手** | 1 週 | 1 天 | 7x |
+| **Session 交接** | 30 分 | 5 分 | 6x |
+| **找「為什麼」** | 問人 + 讀代碼 | DESIGN-DECISIONS.md | 10x |
+| **改演算法** | 修改 + 手工測試 | 規則 + checklist | 3x |
+| **文檔同步** | 經常遺漏 | 100% 同步 | ∞ |
 
 ---
 
-## ✅ Step 6: 第一次提交（1 分鐘）
+## 💡 常見問題
 
-```bash
-git add .
-git commit -m "chore: initialize Harness Engineering system
+**Q: CLAUDE.md 為什麼只有 81 行？**  
+A: 因為它要「永遠載入」。每次 session 多 100 行，就浪費 800 tokens。81 行是在「有用」和「省 token」之間的平衡點。
 
-- Set up .claude/memory/ for cross-session context
-- Configure .claude/rules/ for conditional loading
-- Initialize docs/ with core documentation templates
-- Create MEMORY.md for project progress tracking
+**Q: 我怎麼知道要改什麼 rules？**  
+A: 根據你的技術棧：
+- 用 FastAPI？保留 astro-service.md
+- 用 Next.js？保留 frontend.md
+- 用 PostgreSQL？保留 supabase.md
+- 等等
 
-This system enables:
-✓ New team members onboarding in 1 day
-✓ Cross-session handoff in 5 minutes
-✓ Complete decision traceability
-✓ 50%+ faster delivery cycle"
+詳見 [CLAUDE-CODE-BEST-PRACTICES.md](./CLAUDE-CODE-BEST-PRACTICES.md) 第 5 章
 
-git push -u origin main
+**Q: 新 Session 開始，Claude 會自動讀 MEMORY.md 嗎？**  
+A: 不會自動，但應該在 CLAUDE.md 中提醒：
 ```
-
----
-
-## 🎯 現在你可以開始了
-
-### 在 Claude Code 中使用：
-
-```
-1. 打開你的項目
-2. 開始編輯代碼
-3. 系統自動加載 `.claude/rules/` 中的檢查清單
-4. 完成後更新 `.claude/memory/MEMORY.md`
-```
-
-### 編輯流程：
-
-```
-編輯 backend/services/*.py 
-  → 自動加載 astro-service.md
-  → 檢查清單提醒：「檢查錯誤處理」「更新 API 文檔」
-
-編輯 frontend/components/*.tsx
-  → 自動加載 frontend.md
-  → 檢查清單提醒：「檢查 accessibility」「添加單元測試」
+## Session 交接
+開始前，讀 .claude/memory/MEMORY.md 了解上次進度
 ```
 
 ---
 
 ## 📚 下一步
 
-- **完整指南**：[IMPLEMENTATION-GUIDE.md](./IMPLEMENTATION-GUIDE.md)
-- **文檔分類**：[docs/README.md](./docs/README.md)
-- **項目範例**：[examples/destiny-project/](./examples/destiny-project/)
+- **完整的 12 章最佳實踐**：[CLAUDE-CODE-BEST-PRACTICES.md](./CLAUDE-CODE-BEST-PRACTICES.md)
+- **DESTINY 的實際文檔**：[docs/DESTINY-MVP-SPEC.md](./docs/DESTINY-MVP-SPEC.md)
+- **應用到自己項目**：第 5 章 — 大型專案導入策略（5 步流程）
 
 ---
 
-## 💡 常見問題
-
-**Q: 我需要修改哪些文件？**  
-A: 最少修改：
-- `docs/DESTINY-MVP-SPEC.md` → 改成你的系統規範
-- `.claude/rules/` → 刪除不相關的規則
-- `.claude/memory/MEMORY.md` → 記錄你的進度
-
-**Q: 第一次提交後怎麼用？**  
-A: 每個 session 開始時：
-1. 讀 `.claude/memory/MEMORY.md`
-2. 編輯代碼
-3. 系統自動提醒檢查清單
-4. 完成時更新 MEMORY.md
-
-**Q: 整個系統花多久建立？**  
-A: 
-- 快速開始（本指南）：15 分鐘
-- 完整實施：6-8 週（包括全隊協作和流程沉澱）
-
----
-
-**準備好了嗎？** → [git add . && git commit && git push](./IMPLEMENTATION-GUIDE.md)
+**核心概念**：不是「複製模板」，而是「理解為什麼 DESTINY 要這樣設計」。
