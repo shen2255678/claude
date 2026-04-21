@@ -1,0 +1,62 @@
+{
+  "projectName": "[你的專案名]",
+  "description": "Harness Engineering - AI 應用開發工作流系統",
+
+  "permissions": {
+    "comment": "常見操作的快速許可清單",
+    "git": [
+      "git add",
+      "git commit",
+      "git push",
+      "git status",
+      "git log"
+    ],
+    "npm": [
+      "npm install",
+      "npm test",
+      "npm run dev",
+      "npm run build"
+    ],
+    "python": [
+      "pip install",
+      "pytest",
+      "python scripts/"
+    ]
+  },
+
+  "environment": {
+    "comment": "非敏感的環境變數（敏感的存在 settings.local.json）",
+    "API_TIMEOUT": "30",
+    "LOG_LEVEL": "DEBUG",
+    "ENVIRONMENT": "development"
+  },
+
+  "claudeCodeHooks": {
+    "comment": "Claude Code 執行 hook（自動觸發事件）",
+    "onSessionStart": "echo 'Reading .claude/memory/MEMORY.md' && head -20 .claude/memory/MEMORY.md",
+    "onFileSave": "echo 'File saved'",
+    "rules": {
+      "comment": "根據編輯的文件路徑自動加載規則",
+      "backend/**/*.py": [".claude/rules/docs-first.md", ".claude/rules/astro-service.md", ".claude/rules/api-security.md"],
+      "frontend/**/*.tsx": [".claude/rules/docs-first.md", ".claude/rules/frontend.md"],
+      "database/**/*.sql": [".claude/rules/supabase.md"],
+      "**/**": [".claude/rules/verify-impact.md"]
+    }
+  },
+
+  "documentation": {
+    "comment": "文檔位置指引",
+    "spec": "docs/[PROJECT]-MVP-SPEC.md",
+    "decisions": "docs/DESIGN-DECISIONS.md",
+    "algorithm": "docs/ALGORITHM.md",
+    "testing": "docs/TESTING-GUIDE.md",
+    "deployment": "docs/DEPLOYMENT.md"
+  },
+
+  "team": {
+    "comment": "團隊聯繫方式",
+    "pm": "[Project Manager Name]",
+    "techLead": "[Tech Lead Name]",
+    "devOps": "[DevOps Engineer Name]"
+  }
+}
