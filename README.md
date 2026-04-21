@@ -2,7 +2,7 @@
 
 一個完整的項目管理和知識系統，用於加速 AI 應用從需求到部署的全周期交付。
 
-在 [DESTINY 專案](https://destinyanddestiny.com/)（2000+ 用戶）中已驗證運行。
+在 [DESTINY 專案](https://destinyanddestiny.com/)中已驗證運行。
 
 ---
 
